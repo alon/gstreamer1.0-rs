@@ -31,11 +31,28 @@ impl MainLoop{
 		}
 	}
 
+	#[cfg(all(unix, target_pointer_width = "32"))]
 	pub fn spawn(&mut self){
 		if !self.running {
 			self.running = true;
-			let gst_loop: u64 = unsafe{ mem::transmute(self.gst_loop) };
-			thread::spawn( move|| {
+				let gst_loop: u32 = unsafe{ mem::transmute(self.gst_loop) };
+				thread::spawn( move|| {
+				unsafe{
+					g_main_loop_run ( mem::transmute(gst_loop) );
+				}
+				/*loop{
+					g_main_context_iteration(gst_loop,1);
+				}*/
+			});
+		}
+	}
+
+	#[cfg(all(unix, target_pointer_width = "64"))]
+	pub fn spawn(&mut self){
+		if !self.running {
+			self.running = true;
+				let gst_loop: u64 = unsafe{ mem::transmute(self.gst_loop) };
+				thread::spawn( move|| {
 				unsafe{
 					g_main_loop_run ( mem::transmute(gst_loop) );
 				}
